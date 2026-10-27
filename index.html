@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><link rel="icon" href="icon.png"><link rel="apple-touch-icon" href="icon.png"><title>Lexi Dictionary</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{--bg:#f2f4f7;--fg:#14213d;--mut:#5b6679;--card:#fff;--bd:#d6dce6;--ac:#14213d;--hl:#ffd23f;--on:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1626;--fg:#e8ecf4;--mut:#9aa6bd;--card:#18223a;--bd:#2a3654;--ac:#ffd23f;--on:#14213d;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1626;--fg:#e8ecf4;--mut:#9aa6bd;--card:#18223a;--bd:#2a3654;--ac:#ffd23f;--on:#14213d;color-scheme:dark}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:720px;margin:0 auto;padding:16px 16px 40px}
+h1{font:700 28px/1.1 Charter,"Iowan Old Style",Georgia,serif;margin:8px 0 12px;display:flex;justify-content:space-between;align-items:baseline}
+h1 small{font:13px system-ui,sans-serif;color:var(--mut);font-weight:400}
+nav{display:flex;gap:4px;border-bottom:1px solid var(--bd);margin-bottom:16px;overflow-x:auto}
+nav button{background:none;border:0;color:var(--mut);font:600 15px system-ui,sans-serif;padding:10px 12px;cursor:pointer;border-bottom:3px solid transparent}
+nav button[aria-selected=true]{color:var(--fg);border-color:var(--hl)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--hl);outline-offset:2px}
+input[type=search]{width:100%;font:18px system-ui,sans-serif;padding:12px 14px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--fg);margin-bottom:12px}
+.w{font:700 22px/1.2 Charter,"Iowan Old Style",Georgia,serif}
+.row{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:10px 12px;margin-bottom:8px;color:var(--fg);cursor:pointer;font:inherit}
+.row span{color:var(--mut);font-size:14px;display:block}
+.tag{font-size:12px;color:var(--mut);border:1px solid var(--bd);border-radius:4px;padding:0 6px;margin-left:6px;font-family:system-ui,sans-serif;font-weight:400}
+.box{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:16px;margin-bottom:12px}
+mark{background:var(--hl);color:#14213d;padding:0 4px}
+.m{color:var(--mut);font-size:14px}.ex{font:italic 17px/1.5 Charter,Georgia,serif;margin:8px 0}
+.btn{font:600 14px system-ui,sans-serif;padding:8px 14px;border-radius:6px;border:1px solid var(--ac);background:var(--ac);color:var(--on);cursor:pointer}
+.btn.o{background:none;color:var(--fg);border-color:var(--bd)}.btn[disabled]{opacity:.5}
+.bar{height:6px;background:var(--bd);border-radius:3px;overflow:hidden;margin-top:8px}.bar i{display:block;height:100%;background:var(--hl);transition:width .1s}
+.pk{display:flex;gap:12px;justify-content:space-between;align-items:center}
+.card{min-height:170px;display:flex;flex-direction:column;justify-content:center;text-align:center;cursor:pointer;padding:24px}
+.on{color:#1d7a46}@media(prefers-color-scheme:dark){.on{color:#6fd39a}}
+</style></head><body><main>
+<h1>Lexi <small id="net"></small></h1>
+<nav role="tablist"><button data-a="tab" data-k="dict">Dictionary</button><button data-a="tab" data-k="packs">Offline packs</button><button data-a="tab" data-k="study">Study</button><button data-a="tab" data-k="fav">Saved</button></nav>
+<div id="v"></div></main>
+<script>
+const $=s=>document.querySelector(s),sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const DATA={
+core:["abate|verb|/əˈbeɪt/|to become less intense or widespread|The storm began to abate by morning.","ambiguous|adjective|/æmˈbɪɡjuəs/|open to more than one interpretation|Her answer was deliberately ambiguous.","benevolent|adjective|/bəˈnɛvələnt/|kind and generous toward others|A benevolent donor funded the library.","candid|adjective|/ˈkændɪd/|honest and straightforward|He gave a candid account of the failure.","cogent|adjective|/ˈkoʊdʒənt/|clear, logical and convincing|She made a cogent argument for change.","diligent|adjective|/ˈdɪlɪdʒənt/|careful and hard-working|A diligent student, he never missed a deadline.","eloquent|adjective|/ˈɛləkwənt/|fluent and persuasive in speech or writing|An eloquent speech moved the crowd.","ephemeral|adjective|/ɪˈfɛmərəl/|lasting a very short time|Fame can be ephemeral.","frugal|adjective|/ˈfruːɡəl/|careful about spending money|They lived a frugal life.","gregarious|adjective|/ɡrɪˈɡɛriəs/|fond of company; sociable|A gregarious host, she loved parties.","innate|adjective|/ɪˈneɪt/|present from birth; natural|She has an innate sense of rhythm.","lucid|adjective|/ˈluːsɪd/|expressed clearly; easy to understand|He gave a lucid explanation.","meticulous|adjective|/məˈtɪkjələs/|showing great attention to detail|A meticulous editor, she caught every error.","mitigate|verb|/ˈmɪtɪɡeɪt/|to make less severe or harmful|Trees mitigate the heat of the city.","nuance|noun|/ˈnuːɑːns/|a subtle difference in meaning or tone|The translation missed the nuance.","pragmatic|adjective|/præɡˈmætɪk/|dealing with things sensibly and realistically|A pragmatic approach to budgeting.","resilient|adjective|/rɪˈzɪliənt/|able to recover quickly from difficulties|Children are often remarkably resilient.","scrutinize|verb|/ˈskruːtənaɪz/|to examine closely and critically|Auditors scrutinize every transaction.","tenacious|adjective|/təˈneɪʃəs/|holding firmly to a purpose; persistent|A tenacious negotiator, he never gave up.","ubiquitous|adjective|/juːˈbɪkwɪtəs/|present or found everywhere|Smartphones are now ubiquitous."],
+thes:["abate|subside, ease, wane|intensify, escalate","ambiguous|vague, unclear, equivocal|clear, explicit","benevolent|kind, charitable, generous|malevolent, spiteful","candid|frank, open, forthright|evasive, guarded","cogent|convincing, compelling, sound|weak, unconvincing","diligent|industrious, conscientious|lazy, careless","eloquent|articulate, expressive, fluent|inarticulate, halting","ephemeral|fleeting, transient, brief|lasting, permanent","frugal|thrifty, economical, sparing|wasteful, lavish","gregarious|sociable, outgoing, friendly|reserved, solitary","innate|inborn, natural, inherent|learned, acquired","lucid|clear, coherent, intelligible|obscure, muddled","meticulous|thorough, painstaking, precise|sloppy, careless","mitigate|alleviate, reduce, soften|aggravate, worsen","nuance|subtlety, shade, distinction|","pragmatic|practical, realistic, sensible|idealistic, impractical","resilient|tough, hardy, adaptable|fragile, vulnerable","scrutinize|inspect, examine, analyze|ignore, overlook","tenacious|persistent, determined, dogged|yielding, hesitant","ubiquitous|omnipresent, pervasive|rare, scarce"],
+idiom:["break the ice|to start a conversation in an awkward situation|He told a joke to break the ice.","hit the nail on the head|to describe exactly what is true|You hit the nail on the head.","under the weather|slightly unwell|I’m feeling under the weather today.","spill the beans|to reveal a secret|Who spilled the beans about the party?","once in a blue moon|very rarely|We eat out once in a blue moon.","the ball is in your court|it is your turn to act|I’ve made my offer; the ball is in your court.","bite the bullet|to face something unpleasant bravely|She bit the bullet and told him.","a blessing in disguise|something good that seemed bad at first|Losing that job was a blessing in disguise.","cost an arm and a leg|to be very expensive|That car costs an arm and a leg.","let the cat out of the bag|to reveal a secret by mistake|He let the cat out of the bag."],
+phrasal:["give up|to stop trying; quit|Don’t give up on your goals.","look after|to take care of|She looks after her grandmother.","carry out|to perform or complete|The team carried out the survey.","come across|to find or meet by chance|I came across an old photo.","figure out|to understand or solve|We figured out the problem.","put off|to postpone|They put off the meeting until Friday.","run out of|to have no more of|We ran out of milk.","turn down|to refuse or reject|He turned down the offer.","bring up|to raise a topic; to raise a child|She brought up an important issue.","look forward to|to anticipate with pleasure|I look forward to meeting you."],
+irreg:["be|was / were|been","begin|began|begun","break|broke|broken","bring|brought|brought","choose|chose|chosen","do|did|done","drink|drank|drunk","eat|ate|eaten","forget|forgot|forgotten","give|gave|given","go|went|gone","know|knew|known","run|ran|run","see|saw|seen","speak|spoke|spoken","write|wrote|written"],
+acad:["analyse|to examine in detail","assume|to accept as true without proof","concept|an abstract idea","consistent|always behaving in the same way","derive|to obtain from a source","estimate|to roughly calculate","evidence|facts showing whether something is true","factor|a circumstance that influences a result","hypothesis|a proposed explanation to be tested","indicate|to point out or show","significant|large or important enough to notice","variable|a factor that can change"],
+conf:["affect / effect|Affect is usually a verb (to influence); effect is usually a noun (a result).","its / it’s|Its shows possession; it’s means “it is” or “it has”.","their / there / they’re|Their = belonging to them; there = a place; they’re = they are.","then / than|Then relates to time; than compares.","accept / except|Accept = to receive; except = excluding.","advice / advise|Advice is the noun; advise is the verb.","lose / loose|Lose = misplace or fail to win; loose = not tight.","principal / principle|Principal = main or head; principle = a rule or belief."]};
+const PACKS=[["core","Core dictionary","Definitions, pronunciations and example sentences",1],["thes","Thesaurus","Synonyms and antonyms shown inside word entries",1],["idiom","Idioms","Common expressions with meanings and examples",1],["phrasal","Phrasal verbs","Verb + particle combinations in context",1],["irreg","Irregular verbs","Past simple and past participle forms",1],["acad","Academic word list","Vocabulary for essays and exams",1],["conf","Commonly confused words","Short guides to look-alike words",1]].map(a=>({id:a[0],name:a[1],d:a[2],v:a[3]}));
+const TYPE={word:"word",idiom:"idiom",phrasal:"phrasal verb",verb:"irregular verb",academic:"academic",confusable:"confused words"};
+let db=null,inst={},IDX=[],TH={},prog={},tab="dict",q="",sel=null,fav=[],deck=[],ci=0,flip=false,note="";
+try{fav=JSON.parse(localStorage.getItem("lexi-fav")||"[]")}catch(e){}
+const saveFav=()=>{try{localStorage.setItem("lexi-fav",JSON.stringify(fav))}catch(e){}};
+const openDb=()=>new Promise((ok,no)=>{const r=indexedDB.open("lexi",2);r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains("packs"))d.createObjectStore("packs",{keyPath:"id"});if(!d.objectStoreNames.contains("audio"))d.createObjectStore("audio")};r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)});
+const dbop=(m,f,st="packs")=>new Promise((ok,no)=>{const t=db.transaction(st,m),o=f(t.objectStore(st));t.oncomplete=()=>ok(o.result);t.onerror=()=>no(t.error)});
+// Swap the body of fetchPack for fetch(PACK_BASE_URL + id + ".json") when packs are hosted on your own server.
+async function fetchPack(id,on){for(let i=1;i<=10;i++){await sleep(70+Math.random()*130);on(i/10)}return DATA[id]}
+async function save(id,rows,imp){const rec={id,v:PACKS.find(p=>p.id==id).v,rows,size:new Blob([JSON.stringify(rows)]).size,date:Date.now(),imp:!!imp};inst[id]=rec;if(db)await dbop("readwrite",s=>s.put(rec))}
+async function install(id){prog[id]=0;note="";render();try{const rows=await fetchPack(id,p=>{prog[id]=p;paintBar(id)});await save(id,rows)}catch(e){note="Download failed for "+id+": "+e.message}delete prog[id];build();render()}
+async function remove(id){delete inst[id];if(db)await dbop("readwrite",s=>s.delete(id));sel=null;build();render()}
+function build(){IDX=[];TH={};const R=id=>inst[id]?inst[id].rows:[];
+R("core").forEach(s=>{const[w,pos,pr,d,e]=s.split("|");IDX.push({t:"word",w,pos,pr,d,e})});
+R("thes").forEach(s=>{const[w,syn,ant]=s.split("|");TH[w]={syn,ant}});
+R("idiom").forEach(s=>{const[w,d,e]=s.split("|");IDX.push({t:"idiom",w,d,e})});
+R("phrasal").forEach(s=>{const[w,d,e]=s.split("|");IDX.push({t:"phrasal",w,d,e})});
+R("irreg").forEach(s=>{const[w,a,b]=s.split("|");IDX.push({t:"verb",w,d:"past simple: "+a+" · past participle: "+b})});
+R("acad").forEach(s=>{const[w,d]=s.split("|");IDX.push({t:"academic",w,d})});
+R("conf").forEach(s=>{const[w,d]=s.split("|");IDX.push({t:"confusable",w,d})});
+IDX.sort((a,b)=>a.w.localeCompare(b.w))}
+const key=x=>x.t+":"+x.w,find=k=>IDX.find(x=>key(x)==k);
+const kb=n=>(n/1024).toFixed(1)+" KB";
+const ACC=[["en-US","US","American"],["en-GB","UK","British"],["en-AU","AU","Australian"],["en-IN","IN","Indian"],["en-NG","NG","Nigerian"],["en-ZA","ZA","South African"]];
+let AUD=new Set(),acc="en-US",cur=null,pa=null;
+try{acc=localStorage.getItem("lexi-acc")||"en-US"}catch(e){}
+try{speechSynthesis.onvoiceschanged=()=>{if(tab=="packs")render()}}catch(e){}
+const vkey=(a,w)=>a+":"+w.toLowerCase();
+const voices=a=>{try{return speechSynthesis.getVoices().filter(v=>v.lang.replace("_","-").toLowerCase()==a.toLowerCase())}catch(e){return[]}};
+const hint=t=>{const h=$("#hint");if(h)h.textContent=t};
+// Hosted audio: to pull recordings from a server, fetch AUDIO_BASE_URL + accent + "/" + word + ".mp3" here and store the blob with the same put() call importAudio uses.
+async function play(a,w){acc=a;try{localStorage.setItem("lexi-acc",a)}catch(e){}
+try{if(cur)cur.pause()}catch(e){}
+if(db&&AUD.has(vkey(a,w))){try{const bl=await dbop("readonly",s=>s.get(vkey(a,w)),"audio");if(bl){cur=new Audio(URL.createObjectURL(bl));await cur.play();hint("Playing stored recording.");return}}catch(e){}}
+try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(w),v=voices(a)[0];u.lang=a;if(v)u.voice=v;speechSynthesis.speak(u);hint(v?"Played with a "+a+" device voice.":"No "+a+" voice on this device, so the default voice was used. Import recordings under Offline packs for this accent.")}catch(e){hint("Audio is not supported in this browser.")}}
+async function importAudio(a,files){if(!db){note="Storage is unavailable, so recordings cannot be saved.";return render()}let n=0;for(const f of files){if(!/^audio\//.test(f.type)&&!/\.(mp3|wav|ogg|m4a|webm)$/i.test(f.name))continue;const w=f.name.replace(/\.[^.]+$/,"").toLowerCase();await dbop("readwrite",s=>s.put(f,vkey(a,w)),"audio");AUD.add(vkey(a,w));n++}note="Stored "+n+" recordings for "+a+". Files are matched by name, so abate.mp3 plays for the word abate.";render()}
+async function clearAudio(a){for(const k of [...AUD].filter(k=>k.startsWith(a+":"))){await dbop("readwrite",s=>s.delete(k),"audio");AUD.delete(k)}render()}
+function audioHtml(){let h=`<h2 class="w" style="font-size:20px;margin:20px 0 8px">Pronunciation audio</h2><p class="m">Import recordings named after the word, such as abate.mp3, for each accent. Without a recording, Lexi uses your device’s voice for that accent when one exists.</p><input id="af" type="file" accept="audio/*" multiple hidden>`;
+ACC.forEach(x=>{const n=[...AUD].filter(k=>k.startsWith(x[0]+":")).length,v=voices(x[0]).length;h+=`<div class="box pk"><div><b>${x[2]} English</b><span class="tag">${x[0]}</span><div class="m">${n} recordings stored · ${v?v+" device voice"+(v>1?"s":""):"no device voice"}</div></div><div><button class="btn" data-a="ia" data-k="${x[0]}">Import files</button>${n?` <button class="btn o" data-a="ca" data-k="${x[0]}">Clear</button>`:""}</div></div>`});return h}
+function search(){const s=q.trim().toLowerCase();if(!s)return[];const a=[],b=[],c=[];
+IDX.forEach(x=>{const w=x.w.toLowerCase();if(w.startsWith(s))a.push(x);else if(w.includes(s))b.push(x);else if((x.d||"").toLowerCase().includes(s))c.push(x)});return a.concat(b,c).slice(0,40)}
+function rowHtml(x){return `<button class="row" data-a="open" data-k="${esc(key(x))}"><b>${esc(x.w)}</b><span class="tag">${TYPE[x.t]}</span><span>${esc(x.d)}</span></button>`}
+function detail(x){const th=TH[x.w],f=fav.includes(key(x));
+let h=`<button class="btn o" data-a="back">Back</button><div class="box" style="margin-top:12px"><div class="w">${esc(x.w)}</div><div class="m">${esc(x.pos||TYPE[x.t])} ${x.pr?" · "+esc(x.pr):""}</div><p>${esc(x.d)}</p>${x.e?`<div class="ex">“${esc(x.e)}”</div>`:""}`;
+if(x.t=="word"){if(th)h+=`<p><mark>Synonyms</mark> ${esc(th.syn)}</p>${th.ant?`<p><mark>Antonyms</mark> ${esc(th.ant)}</p>`:""}`;else h+=`<p class="m">Synonyms and antonyms are in the Thesaurus pack. <a href="#" data-a="tab" data-k="packs">Download it</a>.</p>`}
+h+=`<p>${ACC.map(a=>`<button class="btn${a[0]==acc?"":" o"}" data-a="say" data-k="${a[0]}" data-w="${esc(x.w)}" aria-label="Listen in ${a[2]} English">${a[1]}${AUD.has(vkey(a[0],x.w))?" ●":""}</button>`).join(" ")}</p><p class="m" id="hint">A ● marks a stored recording. Other accents use a device voice.</p><p><button class="btn o" data-a="fav" data-k="${esc(key(x))}">${f?"Remove from saved":"Save"}</button></p></div>`;return h}
+function dict(){if(sel){const x=find(sel);if(x)return detail(x)}
+const n=Object.keys(inst).length;
+if(!n)return `<div class="box"><div class="w">Nothing installed yet</div><p class="m">Download a pack to search offline. Start with the core dictionary.</p><button class="btn" data-a="tab" data-k="packs">Open offline packs</button></div>`;
+const r=search();let h=`<input id="q" type="search" placeholder="Search words, idioms, phrasal verbs" value="${esc(q)}" autocomplete="off" aria-label="Search">`;
+if(q.trim())h+=r.length?r.map(rowHtml).join(""):`<p class="m">No match in your installed packs. Check the spelling or download more packs.</p>`;
+else{const W=IDX.filter(x=>x.t=="word");if(W.length){const x=W[Math.floor(Date.now()/864e5)%W.length];h+=`<div class="box"><span class="m">Word of the day</span><div class="w"><mark>${esc(x.w)}</mark></div><p>${esc(x.d)}</p><button class="btn o" data-a="open" data-k="${esc(key(x))}">See entry</button></div>`}
+h+=`<p class="m">${IDX.length} entries available offline from ${n} of ${PACKS.length} packs.</p>`}
+return `<div id="d">${h}</div>`}
+function packs(){const ids=Object.keys(inst),tot=ids.reduce((a,i)=>a+inst[i].size,0),miss=PACKS.filter(p=>!inst[p.id]&&prog[p.id]==null);
+let h=`<div class="box"><b>${ids.length} of ${PACKS.length} packs on this device</b> · ${kb(tot)}<p class="m">${db?"Stored in your browser, so entries work without a connection.":"Storage is unavailable here, so packs last only until you close the page."}</p><button class="btn" data-a="all" ${miss.length?"":"disabled"}>Download all packs</button> <button class="btn o" data-a="imp">Import pack file</button><input id="f" type="file" accept=".json" hidden>${note?`<p class="m">${esc(note)}</p>`:""}</div>`;
+PACKS.forEach(p=>{const i=inst[p.id],pg=prog[p.id];h+=`<div class="box"><div class="pk"><div><b>${p.name}</b>${i?`<span class="tag on">installed${i.imp?" · imported":""}</span>`:""}<div class="m">${p.d} · ${kb(i?i.size:new Blob([JSON.stringify(DATA[p.id])]).size)} · ${(i?i.rows:DATA[p.id]).length} entries</div></div>${pg!=null?"":i?`<button class="btn o" data-a="rm" data-k="${p.id}">Remove</button>`:`<button class="btn" data-a="dl" data-k="${p.id}">Download</button>`}</div>${pg!=null?`<div class="bar"><i id="b-${p.id}" style="width:${pg*100}%"></i></div>`:""}</div>`});
+h+=audioHtml();return h+`<p class="m">Import format: a JSON file like {"id":"idiom","rows":["phrase|meaning|example"]}. Row layouts follow the built-in packs.</p>`}
+function study(){if(!deck.length)return `<div class="box"><p>Flashcards use the core dictionary and academic word list. Download one of those packs to start.</p><button class="btn" data-a="tab" data-k="packs">Open offline packs</button></div>`;
+const x=deck[ci%deck.length];return `<p class="m">Card ${ci%deck.length+1} of ${deck.length}</p><div class="box card" data-a="flip" tabindex="0" role="button">${flip?`<p>${esc(x.d)}</p>${x.e?`<div class="ex">“${esc(x.e)}”</div>`:""}`:`<div class="w">${esc(x.w)}</div><span class="m">${esc(x.pr||"")}</span>`}</div><button class="btn o" data-a="flip">${flip?"Hide meaning":"Show meaning"}</button> <button class="btn" data-a="next">Next card</button>`}
+function favs(){const L=fav.map(find).filter(Boolean);return L.length?L.map(rowHtml).join(""):`<div class="box"><p class="m">Nothing saved yet. Open an entry and choose Save.</p></div>`}
+function render(){document.querySelectorAll("nav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.k==tab));$("#v").innerHTML=({dict,packs,study,fav:favs})[tab]();const i=$("#q");if(i)i.oninput=e=>{q=e.target.value;renderRes()}}
+function renderRes(){const s=search(),box=$("#d");if(!box)return;box.querySelectorAll(".row,.m,.box").forEach(n=>n.remove());const frag=document.createElement("div");frag.innerHTML=q.trim()?(s.length?s.map(rowHtml).join(""):`<p class="m">No match in your installed packs.</p>`):"";while(frag.firstChild)box.appendChild(frag.firstChild)}
+function paintBar(id){const b=$("#b-"+id);if(b)b.style.width=prog[id]*100+"%"}
+function newDeck(){deck=IDX.filter(x=>x.t=="word"||x.t=="academic").sort(()=>Math.random()-.5);ci=0;flip=false}
+document.addEventListener("click",async e=>{const b=e.target.closest("[data-a]");if(!b)return;e.preventDefault();const a=b.dataset.a,k=b.dataset.k;
+if(a=="tab"){tab=k;sel=null;if(k=="study")newDeck();render()}
+else if(a=="open"){sel=k;render()}else if(a=="back"){sel=null;render()}
+else if(a=="say")play(k,b.dataset.w);else if(a=="ia"){pa=k;$("#af").click()}else if(a=="ca")clearAudio(k);
+else if(a=="fav"){fav=fav.includes(k)?fav.filter(x=>x!=k):fav.concat(k);saveFav();render()}
+else if(a=="dl")install(k);else if(a=="rm")remove(k);
+else if(a=="all"){for(const p of PACKS)if(!inst[p.id]&&prog[p.id]==null)await install(p.id)}
+else if(a=="imp")$("#f").click();
+else if(a=="flip"){flip=!flip;render()}else if(a=="next"){ci++;flip=false;render()}});
+document.addEventListener("change",async e=>{if(e.target.id=="af"){await importAudio(pa,e.target.files);e.target.value="";return}if(e.target.id!="f"||!e.target.files[0])return;try{const j=JSON.parse(await e.target.files[0].text());
+if(!PACKS.some(p=>p.id==j.id)||!Array.isArray(j.rows)||j.rows.some(r=>typeof r!="string"))throw new Error("expected {id, rows[]} with a known pack id");
+await save(j.id,j.rows,true);note="Imported "+j.rows.length+" entries into "+j.id+".";build()}catch(x){note="Import failed: "+x.message}render()});
+const netUp=()=>{$("#net").textContent=navigator.onLine?"online":"offline"};addEventListener("online",netUp);addEventListener("offline",netUp);netUp();
+(async()=>{try{db=await openDb();(await dbop("readonly",s=>s.getAll())).forEach(r=>inst[r.id]=r);(await dbop("readonly",s=>s.getAllKeys(),"audio")).forEach(k=>AUD.add(k))}catch(e){db=null}build();render()})();
+</script></body></html>
